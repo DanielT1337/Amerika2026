@@ -1,0 +1,10 @@
+User-agent: *
+Disallow: /
+
+**Was wir jetzt gemacht haben:**
+* **Passwort-Sperre:** Wenn du die Seite öffnest, kommt ein blaues Overlay. Man kann nichts sehen und nichts tippen, ohne das Passwort (aktuell: `Florida2026!`).
+* **Geheime ID:** Das Dokument in der Cloud heißt jetzt nicht mehr `daniel_xenia`, sondern `trip_v92k85pL02mZ`. Das ist wie ein zweites, langes Passwort.
+* **Firestore Regeln:** Du musst in der Firebase Console nur noch die Regel an den neuen Namen anpassen:
+    `match /reiseplan/trip_v92k85pL02mZ { allow read, write: if request.auth != null; }`
+
+Damit seid ihr absolut sicher. Niemand wird "aus Versehen" euer Passwort erraten, eure geheime Dokument-ID kennen **und** eure private GitHub-URL finden. Viel Spaß beim Planen!
