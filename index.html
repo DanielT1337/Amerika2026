@@ -3,145 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reiseplan Florida & New York</title>
+    <title>Cloud Reiseplan Florida & NY</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f3f4f6; 
-            margin: 0; 
-            padding: 0; 
-            color: #1f2937; 
-        }
-        
-        header { 
-            background-color: #1e3a8a; 
-            color: white; 
-            padding: 30px 20px; 
-            text-align: center; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
-        }
-        
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; color: #1f2937; }
+        header { background-color: #1e3a8a; color: white; padding: 30px 20px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: relative; }
         h1 { margin: 0; font-size: 1.75rem; font-weight: 700; }
         p.subtitle { margin-top: 10px; opacity: 0.9; }
         
-        .container { 
-            max-width: 900px; 
-            margin: 30px auto; 
-            padding: 0 15px; 
-        }
-        
-        .day-card { 
-            background: white; 
-            border-radius: 12px; 
-            margin-bottom: 40px; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); 
-            overflow: hidden; 
-        }
-        
-        .day-header { 
-            background-color: #374151; 
-            color: white; 
-            padding: 16px 24px; 
-            font-weight: 700; 
-            font-size: 1.25rem; 
-        }
-        
-        .night-block { 
-            background-color: #e5e7eb; 
-            color: #4b5563; 
-            text-align: center; 
-            padding: 12px; 
-            font-size: 0.9rem; 
-            border-bottom: 1px solid #d1d5db; 
-        }
-        
-        .hour-row { 
-            display: flex; 
-            border-bottom: 1px solid #f3f4f6; 
-        }
-        
+        .status-badge { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; }
+        .status-dot { width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; }
+        .status-dot.connected { background-color: #10b981; }
+
+        .container { max-width: 900px; margin: 30px auto; padding: 0 15px; }
+        .day-card { background: white; border-radius: 12px; margin-bottom: 40px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); overflow: hidden; }
+        .day-header { background-color: #374151; color: white; padding: 16px 24px; font-weight: 700; font-size: 1.25rem; }
+        .night-block { background-color: #e5e7eb; color: #4b5563; text-align: center; padding: 12px; font-size: 0.9rem; border-bottom: 1px solid #d1d5db; }
+        .hour-row { display: flex; border-bottom: 1px solid #f3f4f6; }
         .hour-row:last-child { border-bottom: none; }
+        .time-col { width: 140px; min-width: 140px; padding: 16px; background-color: #f9fafb; color: #6b7280; font-weight: 600; border-right: 1px solid #e5e7eb; display: flex; align-items: center; }
+        .activity-col { padding: 16px 24px; flex-grow: 1; display: flex; align-items: center; }
         
-        .time-col { 
-            width: 140px; 
-            min-width: 140px; 
-            padding: 16px; 
-            background-color: #f9fafb; 
-            color: #6b7280; 
-            font-weight: 600; 
-            border-right: 1px solid #e5e7eb; 
-            display: flex;
-            align-items: center;
-        }
+        .booked-event { color: #111827; font-weight: 400; }
+        .post-trip { color: #9ca3af; font-style: italic; }
         
-        .activity-col { 
-            padding: 16px 24px; 
-            flex-grow: 1; 
-            display: flex;
-            align-items: center;
-        }
-        
-        .free-time { 
-            color: #10b981; 
-            font-weight: 600; 
-        }
-        
-        .booked-event { 
-            color: #111827; 
-            font-weight: 400; 
-        }
-
-        .post-trip {
-            color: #9ca3af;
-            font-style: italic;
-        }
-
-        /* Neue Styles für die interaktiven Eingabefelder */
-        .editable-activity {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px dashed #d1d5db;
-            border-radius: 6px;
-            background-color: #f0fdf4; /* Leichtes Grün für Freizeit */
-            color: #10b981;
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            font-weight: 600;
-            box-sizing: border-box;
-            transition: all 0.2s;
-            resize: vertical;
-            min-height: 40px;
-        }
-
-        .editable-activity:focus {
-            outline: none;
-            border: 1px solid #10b981;
-            background-color: white;
-            color: #1f2937;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-        }
-
-        .editable-activity::placeholder {
-            color: #6ee7b7;
-            font-weight: 400;
-        }
-
-        .saving-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #10b981;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+        .editable-activity { width: 100%; padding: 8px 12px; border: 1px dashed #d1d5db; border-radius: 6px; background-color: #f0fdf4; color: #10b981; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600; box-sizing: border-box; transition: all 0.2s; resize: vertical; min-height: 40px; }
+        .editable-activity:focus { outline: none; border: 1px solid #10b981; background-color: white; color: #1f2937; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        .editable-activity::placeholder { color: #6ee7b7; font-weight: 400; }
+        .editable-activity:disabled { opacity: 0.6; cursor: not-allowed; }
 
         @media (max-width: 600px) {
             .hour-row { flex-direction: column; }
@@ -153,196 +43,179 @@
 <body>
     <header>
         <h1>Reiseplan USA 2026</h1>
-        <p class="subtitle">Florida & New York | 01.12. - 22.12.2026</p>
+        <p class="subtitle">Cloud-Sync: Florida & New York</p>
+        <div class="status-badge" id="sync-status">
+            <div class="status-dot" id="status-dot"></div>
+            <span id="status-text">Verbinde...</span>
+        </div>
     </header>
     
     <div class="container" id="calendar-container">
-        <!-- Kalender wird hier durch JavaScript generiert -->
+        <!-- Kalender -->
     </div>
-    
-    <div id="save-indicator" class="saving-indicator">Gespeichert ✓</div>
 
-    <script>
-        const startDate = new Date(2026, 11, 1); // 1. Dezember 2026
-        const endDate = new Date(2026, 11, 22);  // 22. Dezember 2026
+    <!-- Firebase SDK (Version 11) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // DEINE FIREBASE KONFIGURATION (FÜR GITHUB)
+        // ==========================================
+        // Ersetze diese Platzhalter durch die Werte aus deinem Firebase-Projekt!
+        const myFirebaseConfig = {
+            apiKey: "AIzaSyBfMmc6gekTKmJvR2UagXRawHJV1Rtg-ws",
+  authDomain: "amerika2026-19c4e.firebaseapp.com",
+  projectId: "amerika2026-19c4e",
+  storageBucket: "amerika2026-19c4e.firebasestorage.app",
+  messagingSenderId: "894526152489",
+  appId: "1:894526152489:web:06ec495b6d414d2e1da138"
+        };
+        // ==========================================
+
+        // Basis-Daten der Reise
+        const startDate = new Date(2026, 11, 1);
+        const endDate = new Date(2026, 11, 22);
         const weekdays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
-
-        // Exakte, neutrale Reisedaten aus dem Kuoni-Dokument
         const itinerary = {
-            "2026-12-01": {
-                8: "Check-in & Gepäckabgabe (Flughafen Zürich)",
-                9: "Abflug LX 66 nach Miami (09:50)",
-                10: "Flugzeit",
-                11: "Flugzeit",
-                12: "Flugzeit",
-                13: "Flugzeit",
-                14: "Ankunft Miami International (14:40)",
-                15: "Einreise & Mietwagenübernahme",
-                16: "Fahrt nach Miami Beach",
-                17: "Check-in: Villa Italia Hotel"
-            },
-            "2026-12-06": {
-                9: "Check-out Villa Italia Hotel",
-                10: "Fahrt nach Naples",
-                11: "Fahrt nach Naples",
-                12: "Fahrt nach Naples",
-                15: "Check-in: Hampton Inn & Suites Naples South"
-            },
-            "2026-12-07": {
-                9: "Check-out Hampton Inn",
-                10: "Fahrt nach Sarasota",
-                11: "Fahrt nach Sarasota",
-                15: "Check-in: Lido Beach Resort"
-            },
-            "2026-12-10": {
-                10: "Check-out Lido Beach Resort",
-                11: "Fahrt nach St. Pete Beach",
-                12: "Fahrt nach St. Pete Beach",
-                15: "Check-in: Beachcomber Beach Resort"
-            },
-            "2026-12-12": {
-                9: "Check-out Beachcomber",
-                10: "Fahrt nach Kissimmee / Orlando",
-                11: "Fahrt nach Kissimmee / Orlando",
-                15: "Check-in: Disney's All-Star Music Resort"
-            },
-            "2026-12-14": {
-                8: "Check-out Disney Resort & Fahrt zum Flughafen",
-                9: "Mietwagenrückgabe (Orlando Airport)",
-                10: "Check-in & Sicherheitskontrolle",
-                11: "Abflug UA 254 nach Newark (11:45)",
-                12: "Flugzeit",
-                13: "Flugzeit",
-                14: "Ankunft Newark (14:38)",
-                15: "Gepäck & Transfer nach Manhattan",
-                16: "Ankunft The Beekman Tower",
-                17: "Check-in: The Beekman Tower"
-            },
-            "2026-12-21": {
-                11: "Check-out The Beekman Tower (Gepäck deponieren)",
-                18: "Transfer zum Flughafen Newark",
-                19: "Check-in & Sicherheitskontrolle",
-                20: "Warten am Gate / Boarding",
-                21: "Abflug LX 19 nach Zürich (22:00)"
-            },
-            "2026-12-22": {
-                8: "Flugzeit",
-                9: "Flugzeit",
-                10: "Landeanflug",
-                11: "Landung Zürich (11:35)",
-                12: "Gepäckausgabe & Heimreise",
-                13: "Ende der Reise",
-                14: "-",
-                15: "-",
-                16: "-",
-                17: "-",
-                18: "-",
-                19: "-",
-                20: "-",
-                21: "-"
-            }
+            "2026-12-01": { 8: "Check-in (ZRH)", 9: "Abflug LX 66 nach Miami", 10: "Flug", 11: "Flug", 12: "Flug", 13: "Flug", 14: "Ankunft MIA (14:40)", 15: "Mietwagen Alamo", 16: "Fahrt Miami Beach", 17: "Check-in: Villa Italia" },
+            "2026-12-06": { 9: "Check-out Villa Italia", 10: "Fahrt Naples", 11: "Fahrt Naples", 12: "Fahrt Naples", 15: "Check-in: Hampton Inn" },
+            "2026-12-07": { 9: "Check-out Hampton Inn", 10: "Fahrt Sarasota", 11: "Fahrt Sarasota", 15: "Check-in: Lido Beach Resort" },
+            "2026-12-10": { 10: "Check-out Lido Beach", 11: "Fahrt St. Pete", 12: "Fahrt St. Pete", 15: "Check-in: Beachcomber" },
+            "2026-12-12": { 9: "Check-out Beachcomber", 10: "Fahrt Kissimmee", 11: "Fahrt Kissimmee", 15: "Check-in: Disney Music Resort" },
+            "2026-12-14": { 8: "Check-out Disney", 9: "Mietwagenrückgabe", 10: "Sicherheitskontrolle", 11: "Abflug UA 254", 12: "Flug", 13: "Flug", 14: "Ankunft Newark", 15: "Transfer Manhattan", 16: "Ankunft Beekman Tower", 17: "Check-in: Beekman Tower" },
+            "2026-12-21": { 11: "Check-out Beekman", 18: "Transfer EWR", 19: "Sicherheitskontrolle", 20: "Boarding", 21: "Abflug LX 19" },
+            "2026-12-22": { 8: "Flug", 9: "Flug", 10: "Landeanflug", 11: "Landung ZRH (11:35)", 12: "Heimreise", 13: "-", 14: "-", 15: "-", 16: "-", 17: "-", 18: "-", 19: "-", 20: "-", 21: "-" }
         };
 
+        // UI generieren (wie zuvor, aber Inputs sind anfangs deaktiviert)
         const container = document.getElementById('calendar-container');
         let currentDate = new Date(startDate);
 
         while (currentDate <= endDate) {
-            // Datum formatieren: YYYY-MM-DD
             const year = currentDate.getFullYear();
             const month = String(currentDate.getMonth() + 1).padStart(2, '0');
             const day = String(currentDate.getDate()).padStart(2, '0');
             const dateKey = `${year}-${month}-${day}`;
-            
-            // Format für Anzeige: "Montag, 01.12.2026"
             const displayDate = `${weekdays[currentDate.getDay()]}, ${day}.${month}.${year}`;
             
-            // Tageskarte erstellen
             const dayCard = document.createElement('div');
             dayCard.className = 'day-card';
+            dayCard.innerHTML = `
+                <div class="day-header">${displayDate}</div>
+                <div class="night-block">22:00 - 08:00 Uhr: Nachtruhe / Hotel</div>
+            `;
             
-            // Header
-            const header = document.createElement('div');
-            header.className = 'day-header';
-            header.textContent = displayDate;
-            dayCard.appendChild(header);
-            
-            // Nachtruhe Info
-            const nightBlock = document.createElement('div');
-            nightBlock.className = 'night-block';
-            nightBlock.textContent = '22:00 - 08:00 Uhr: Nachtruhe / Hotel';
-            dayCard.appendChild(nightBlock);
-            
-            // Stunden generieren (08:00 bis 21:00)
             const eventsForDay = itinerary[dateKey] || {};
-            
             for (let h = 8; h <= 21; h++) {
                 const hourRow = document.createElement('div');
                 hourRow.className = 'hour-row';
                 
-                // Zeit-Spalte (z.B. "08:00 - 09:00")
                 const timeCol = document.createElement('div');
                 timeCol.className = 'time-col';
                 timeCol.textContent = `${String(h).padStart(2, '0')}:00 - ${String(h + 1).padStart(2, '0')}:00`;
                 
-                // Aktivitäts-Spalte
                 const activityCol = document.createElement('div');
                 activityCol.className = 'activity-col';
                 
                 let activityText = eventsForDay[h];
-                
                 if (activityText) {
-                    if (activityText === "-") {
-                        activityCol.innerHTML = `<span class="post-trip">Reise beendet</span>`;
-                    } else {
-                        activityCol.innerHTML = `<span class="booked-event">${activityText}</span>`;
-                    }
+                    if (activityText === "-") activityCol.innerHTML = `<span class="post-trip">Reise beendet</span>`;
+                    else activityCol.innerHTML = `<span class="booked-event">${activityText}</span>`;
                 } else {
-                    // ID für das Eingabefeld generieren (z.B. "input-2026-12-05-14")
-                    const inputId = `input-${dateKey}-${h}`;
-                    
-                    // Gespeicherten Wert aus dem LocalStorage laden, falls vorhanden
-                    const savedValue = localStorage.getItem(inputId) || "";
-                    
-                    activityCol.innerHTML = `
-                        <textarea 
-                            id="${inputId}" 
-                            class="editable-activity" 
-                            placeholder="Freizeit (hier klicken zum Planen...)"
-                            oninput="saveActivity('${inputId}')"
-                        >${savedValue}</textarea>
-                    `;
+                    const inputId = `slot_${dateKey}_${h}`;
+                    activityCol.innerHTML = `<textarea id="${inputId}" class="editable-activity custom-input" placeholder="Freizeit..." disabled></textarea>`;
                 }
                 
                 hourRow.appendChild(timeCol);
                 hourRow.appendChild(activityCol);
                 dayCard.appendChild(hourRow);
             }
-            
             container.appendChild(dayCard);
-            
-            // Einen Tag weitergehen
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        // Speicher-Logik
-        let saveTimeout;
-        const saveIndicator = document.getElementById('save-indicator');
+        // ==========================================
+        // FIREBASE LOGIK
+        // ==========================================
+        let db, auth, docRef;
+        let isCanvas = typeof __firebase_config !== 'undefined';
+        
+        async function initApp() {
+            // Konfiguration wählen (Sicherstellung, dass es auch in dieser Vorschau funktioniert)
+            const config = isCanvas ? JSON.parse(__firebase_config) : myFirebaseConfig;
+            
+            const app = initializeApp(config);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            
+            // Login
+            if (isCanvas && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
 
-        function saveActivity(inputId) {
-            const inputElement = document.getElementById(inputId);
-            const value = inputElement.value;
-            
-            // Im lokalen Speicher des Browsers ablegen
-            localStorage.setItem(inputId, value);
-            
-            // Kleine "Gespeichert" Animation anzeigen
-            clearTimeout(saveTimeout);
-            saveIndicator.style.opacity = '1';
-            
-            saveTimeout = setTimeout(() => {
-                saveIndicator.style.opacity = '0';
-            }, 1500);
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) return;
+                
+                // Speicherpfad definieren
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default';
+                if (isCanvas) {
+                    docRef = doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', 'shared');
+                } else {
+                    docRef = doc(db, 'reiseplan', 'daniel_xenia'); // Dein Pfad auf GitHub Pages!
+                }
+
+                // UI aktualisieren: Verbunden!
+                document.getElementById('status-dot').classList.add('connected');
+                document.getElementById('status-text').textContent = "Live verbunden";
+                
+                // Eingabefelder aktivieren
+                document.querySelectorAll('.custom-input').forEach(input => {
+                    input.disabled = false;
+                    input.addEventListener('input', handleInput);
+                });
+
+                // Initiale Daten laden & Echtzeit-Sync starten
+                onSnapshot(docRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        document.querySelectorAll('.custom-input').forEach(input => {
+                            // Verhindern, dass der eigene Text beim Tippen überschrieben wird
+                            if (document.activeElement !== input) {
+                                input.value = data[input.id] || "";
+                            }
+                        });
+                    }
+                }, (error) => {
+                    console.error("Sync Error: ", error);
+                });
+            });
         }
+
+        // Speichern mit "Debounce" (verhindert zu viele gleichzeitige Anfragen)
+        let timeout = null;
+        let pendingData = {};
+
+        async function handleInput(e) {
+            pendingData[e.target.id] = e.target.value;
+            
+            clearTimeout(timeout);
+            timeout = setTimeout(async () => {
+                if (!docRef) return;
+                try {
+                    await setDoc(docRef, pendingData, { merge: true });
+                    pendingData = {}; // Reset nach erfolgreichem Speichern
+                } catch (err) {
+                    console.error("Fehler beim Speichern:", err);
+                }
+            }, 500); // Speichert 0.5s nach dem letzten Tastendruck
+        }
+
+        // App starten
+        initApp();
     </script>
 </body>
 </html>
