@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Reiseplan Florida & NY</title>
+    <title>Sicherer Reiseplan Florida & NY</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         
@@ -33,6 +33,12 @@
         .editable-activity::placeholder { color: #6ee7b7; font-weight: 400; }
         .editable-activity:disabled { opacity: 0.6; cursor: not-allowed; }
 
+        /* Login Overlay */
+        #auth-overlay { position: fixed; inset: 0; background: #1e3a8a; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; color: white; transition: opacity 0.5s; }
+        .login-box { background: white; padding: 30px; border-radius: 12px; color: #1f2937; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+        input[type="password"] { padding: 12px; width: 200px; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 15px; text-align: center; font-size: 1rem; }
+        .login-btn { background: #1e3a8a; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
         @media (max-width: 600px) {
             .hour-row { flex-direction: column; }
             .time-col { width: 100%; border-right: none; border-bottom: 1px solid #e5e7eb; padding: 10px 16px; }
@@ -41,40 +47,48 @@
     </style>
 </head>
 <body>
+    <div id="auth-overlay">
+        <div class="login-box">
+            <h2>Reiseplaner Login</h2>
+            <p>Bitte Passwort eingeben:</p>
+            <input type="password" id="pw-input" placeholder="Passwort...">
+            <br>
+            <button class="login-btn" id="login-btn">Einloggen</button>
+        </div>
+    </div>
+
     <header>
         <h1>Reiseplan USA 2026</h1>
-        <p class="subtitle">Cloud-Sync: Florida & New York</p>
+        <p class="subtitle">Sicherer Cloud-Sync: Florida & New York</p>
         <div class="status-badge" id="sync-status">
             <div class="status-dot" id="status-dot"></div>
-            <span id="status-text">Verbinde...</span>
+            <span id="status-text">Gesperrt</span>
         </div>
     </header>
     
-    <div class="container" id="calendar-container">
-        <!-- Kalender -->
-    </div>
+    <div class="container" id="calendar-container"></div>
 
-    <!-- Firebase SDK (Version 11) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
-        // DEINE FIREBASE KONFIGURATION (FÜR GITHUB)
-        // ==========================================
-        // Ersetze diese Platzhalter durch die Werte aus deinem Firebase-Projekt!
         const myFirebaseConfig = {
             apiKey: "AIzaSyBfMmc6gekTKmJvR2UagXRawHJV1Rtg-ws",
-  authDomain: "amerika2026-19c4e.firebaseapp.com",
-  projectId: "amerika2026-19c4e",
-  storageBucket: "amerika2026-19c4e.firebasestorage.app",
-  messagingSenderId: "894526152489",
-  appId: "1:894526152489:web:06ec495b6d414d2e1da138"
+            authDomain: "amerika2026-19c4e.firebaseapp.com",
+            projectId: "amerika2026-19c4e",
+            storageBucket: "amerika2026-19c4e.firebasestorage.app",
+            messagingSenderId: "894526152489",
+            appId: "1:894526152489:web:06ec495b6d414d2e1da138"
         };
+        
+        // DAS PASSWORT (ändere es hier nach Belieben)
+        const APP_PASSWORD = "240924"; 
+        // DAS GEHEIME DOKUMENT (ändere diese ID zu etwas Zufälligem, z.B. "trip_9x2k8l4p")
+        const SECRET_DOC_ID = "trip_v92k85pL02mZ"; 
         // ==========================================
 
-        // Basis-Daten der Reise
         const startDate = new Date(2026, 11, 1);
         const endDate = new Date(2026, 11, 22);
         const weekdays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
@@ -89,7 +103,6 @@
             "2026-12-22": { 8: "Flug", 9: "Flug", 10: "Landeanflug", 11: "Landung ZRH (11:35)", 12: "Heimreise", 13: "-", 14: "-", 15: "-", 16: "-", 17: "-", 18: "-", 19: "-", 20: "-", 21: "-" }
         };
 
-        // UI generieren (wie zuvor, aber Inputs sind anfangs deaktiviert)
         const container = document.getElementById('calendar-container');
         let currentDate = new Date(startDate);
 
@@ -102,16 +115,12 @@
             
             const dayCard = document.createElement('div');
             dayCard.className = 'day-card';
-            dayCard.innerHTML = `
-                <div class="day-header">${displayDate}</div>
-                <div class="night-block">22:00 - 08:00 Uhr: Nachtruhe / Hotel</div>
-            `;
+            dayCard.innerHTML = `<div class="day-header">${displayDate}</div><div class="night-block">22:00 - 08:00 Uhr: Nachtruhe</div>`;
             
             const eventsForDay = itinerary[dateKey] || {};
             for (let h = 8; h <= 21; h++) {
                 const hourRow = document.createElement('div');
                 hourRow.className = 'hour-row';
-                
                 const timeCol = document.createElement('div');
                 timeCol.className = 'time-col';
                 timeCol.textContent = `${String(h).padStart(2, '0')}:00 - ${String(h + 1).padStart(2, '0')}:00`;
@@ -121,13 +130,11 @@
                 
                 let activityText = eventsForDay[h];
                 if (activityText) {
-                    if (activityText === "-") activityCol.innerHTML = `<span class="post-trip">Reise beendet</span>`;
-                    else activityCol.innerHTML = `<span class="booked-event">${activityText}</span>`;
+                    activityCol.innerHTML = `<span class="${activityText==='-'?'post-trip':'booked-event'}">${activityText==='-'?'Ende':activityText}</span>`;
                 } else {
                     const inputId = `slot_${dateKey}_${h}`;
                     activityCol.innerHTML = `<textarea id="${inputId}" class="editable-activity custom-input" placeholder="Freizeit..." disabled></textarea>`;
                 }
-                
                 hourRow.appendChild(timeCol);
                 hourRow.appendChild(activityCol);
                 dayCard.appendChild(hourRow);
@@ -136,86 +143,63 @@
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        // ==========================================
-        // FIREBASE LOGIK
-        // ==========================================
+        // Login Logic
+        const loginBtn = document.getElementById('login-btn');
+        const pwInput = document.getElementById('pw-input');
+        const overlay = document.getElementById('auth-overlay');
+
+        loginBtn.onclick = () => {
+            if (pwInput.value === APP_PASSWORD) {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 500);
+                initFirebase();
+            } else {
+                alert("Falsches Passwort!");
+                pwInput.value = "";
+            }
+        };
+
         let db, auth, docRef;
-        let isCanvas = typeof __firebase_config !== 'undefined';
-        
-        async function initApp() {
-            // Konfiguration wählen (Sicherstellung, dass es auch in dieser Vorschau funktioniert)
-            const config = isCanvas ? JSON.parse(__firebase_config) : myFirebaseConfig;
-            
-            const app = initializeApp(config);
+        async function initFirebase() {
+            const app = initializeApp(myFirebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
             
-            // Login
-            if (isCanvas && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
+            await signInAnonymously(auth);
 
             onAuthStateChanged(auth, async (user) => {
                 if (!user) return;
-                
-                // Speicherpfad definieren
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default';
-                if (isCanvas) {
-                    docRef = doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', 'shared');
-                } else {
-                    docRef = doc(db, 'reiseplan', 'daniel_xenia'); // Dein Pfad auf GitHub Pages!
-                }
+                docRef = doc(db, 'reiseplan', SECRET_DOC_ID);
 
-                // UI aktualisieren: Verbunden!
                 document.getElementById('status-dot').classList.add('connected');
                 document.getElementById('status-text').textContent = "Live verbunden";
                 
-                // Eingabefelder aktivieren
                 document.querySelectorAll('.custom-input').forEach(input => {
                     input.disabled = false;
                     input.addEventListener('input', handleInput);
                 });
 
-                // Initiale Daten laden & Echtzeit-Sync starten
                 onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const data = docSnap.data();
                         document.querySelectorAll('.custom-input').forEach(input => {
-                            // Verhindern, dass der eigene Text beim Tippen überschrieben wird
-                            if (document.activeElement !== input) {
-                                input.value = data[input.id] || "";
-                            }
+                            if (document.activeElement !== input) input.value = data[input.id] || "";
                         });
                     }
-                }, (error) => {
-                    console.error("Sync Error: ", error);
                 });
             });
         }
 
-        // Speichern mit "Debounce" (verhindert zu viele gleichzeitige Anfragen)
         let timeout = null;
         let pendingData = {};
-
         async function handleInput(e) {
             pendingData[e.target.id] = e.target.value;
-            
             clearTimeout(timeout);
             timeout = setTimeout(async () => {
                 if (!docRef) return;
-                try {
-                    await setDoc(docRef, pendingData, { merge: true });
-                    pendingData = {}; // Reset nach erfolgreichem Speichern
-                } catch (err) {
-                    console.error("Fehler beim Speichern:", err);
-                }
-            }, 500); // Speichert 0.5s nach dem letzten Tastendruck
+                try { await setDoc(docRef, pendingData, { merge: true }); pendingData = {}; } catch (err) { console.error(err); }
+            }, 500);
         }
-
-        // App starten
-        initApp();
     </script>
 </body>
 </html>
