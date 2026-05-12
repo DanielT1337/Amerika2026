@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sicherer Reiseplan Florida & NY</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; color: #1f2937; }
         header { background-color: #1e3a8a; color: white; padding: 30px 20px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: relative; }
@@ -18,48 +18,144 @@
 
         .container { max-width: 900px; margin: 30px auto; padding: 0 15px; }
         .day-card { background: white; border-radius: 12px; margin-bottom: 40px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); overflow: hidden; }
-        .day-header { background-color: #374151; color: white; padding: 16px 24px; font-weight: 700; font-size: 1.25rem; }
-        .night-block { background-color: #e5e7eb; color: #4b5563; text-align: center; padding: 12px; font-size: 0.9rem; border-bottom: 1px solid #d1d5db; }
-        .hour-row { display: flex; border-bottom: 1px solid #f3f4f6; }
-        .hour-row:last-child { border-bottom: none; }
-        .time-col { width: 140px; min-width: 140px; padding: 16px; background-color: #f9fafb; color: #6b7280; font-weight: 600; border-right: 1px solid #e5e7eb; display: flex; align-items: center; }
-        .activity-col { padding: 16px 24px; flex-grow: 1; display: flex; align-items: center; }
+        .day-header { background-color: #374151; color: white; padding: 16px 24px; font-weight: 700; font-size: 1.25rem; display: flex; justify-content: space-between; align-items: center; }
+        .day-header .date-tag { font-weight: 400; font-size: 0.9rem; opacity: 0.8; }
         
-        .booked-event { color: #111827; font-weight: 400; }
-        .post-trip { color: #9ca3af; font-style: italic; }
+        .night-block { background-color: #f3f4f6; color: #6b7280; text-align: center; padding: 10px; font-size: 0.85rem; border-bottom: 1px solid #e5e7eb; font-style: italic; }
         
-        .editable-activity { width: 100%; padding: 8px 12px; border: 1px dashed #d1d5db; border-radius: 6px; background-color: #f0fdf4; color: #10b981; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600; box-sizing: border-box; transition: all 0.2s; resize: vertical; min-height: 40px; }
-        .editable-activity:focus { outline: none; border: 1px solid #10b981; background-color: white; color: #1f2937; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
-        .editable-activity::placeholder { color: #6ee7b7; font-weight: 400; }
-        .editable-activity:disabled { opacity: 0.6; cursor: not-allowed; }
+        .block-row { display: flex; border-bottom: 1px solid #f3f4f6; position: relative; flex-direction: column; }
+        .block-row:last-child { border-bottom: none; }
+        
+        .row-main { display: flex; min-height: 64px; }
+        .time-col { width: 150px; min-width: 150px; padding: 15px 16px; background-color: #f9fafb; color: #6b7280; font-weight: 600; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .time-col span { font-size: 0.85rem; display: block; text-align: center; }
+        .time-col .duration-label { font-size: 0.7rem; font-weight: 400; margin-top: 4px; color: #9ca3af; }
 
-        /* Login Overlay */
-        #auth-overlay { position: fixed; inset: 0; background: #1e3a8a; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; color: white; transition: opacity 0.5s; }
-        .login-box { background: white; padding: 30px; border-radius: 12px; color: #1f2937; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
-        input[type="password"] { padding: 12px; width: 200px; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 15px; text-align: center; font-size: 1rem; }
-        .login-btn { background: #1e3a8a; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .activity-col { padding: 12px 24px; flex-grow: 1; display: flex; align-items: center; gap: 12px; position: relative; }
+        
+        .block-fixed { background-color: white; border-left: 5px solid #1e3a8a; }
+        .block-fixed .booked-event { color: #111827; font-weight: 600; }
+        
+        .block-planned { border-left: 5px solid #10b981; }
+        .block-planned.is-confirmed { background-color: #f0fdf4; cursor: pointer; }
+        .block-planned.is-confirmed:hover { background-color: #ecfdf5; }
+        .block-planned.is-editing { background-color: #f9fafb; border-left-style: dashed; }
+        
+        .block-free { background-color: #fffbeb; border-left: 5px solid #fbbf24; }
 
-        @media (max-width: 600px) {
-            .hour-row { flex-direction: column; }
-            .time-col { width: 100%; border-right: none; border-bottom: 1px solid #e5e7eb; padding: 10px 16px; }
-            .activity-col { padding: 12px 16px; }
+        .editable-input { flex-grow: 1; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; font-size: 1rem; color: #1f2937; }
+        .confirmed-title { font-weight: 600; color: #065f46; flex-grow: 1; display: flex; align-items: center; gap: 8px; }
+        
+        .notes-indicator { font-size: 0.85rem; opacity: 0.6; }
+        .notes-drawer { padding: 0 24px 16px 174px; background: #f0fdf4; color: #374151; font-size: 0.9rem; border-top: 1px solid rgba(16, 185, 129, 0.1); display: none; }
+        .notes-drawer.is-visible { display: block; }
+        .notes-text { white-space: pre-wrap; word-break: break-word; line-height: 1.5; }
+        .notes-link { display: inline-flex; align-items: center; gap: 6px; background: #10b981; color: white; padding: 4px 12px; border-radius: 4px; text-decoration: none; font-weight: 500; font-size: 0.8rem; margin-top: 8px; }
+        .notes-link:hover { background: #059669; }
+        
+        .notes-textarea { width: 100%; margin-top: 10px; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; font-size: 0.9rem; resize: vertical; min-height: 60px; }
+
+        .controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .time-select-group { display: flex; align-items: center; gap: 4px; background: #e2e8f0; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; }
+        select { padding: 4px; border-radius: 4px; border: 1px solid #cbd5e1; background: white; font-size: 0.85rem; cursor: pointer; }
+        
+        .btn-icon { border: none; padding: 8px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .btn-confirm { background: #10b981; color: white; }
+        .btn-edit { background: #e2e8f0; color: #475569; }
+        .btn-delete { background: #fee2e2; color: #ef4444; }
+        .btn-add { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+        /* NEUER LOGIN SCREEN */
+        #auth-overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 2000; 
+            transition: opacity 0.5s ease;
+        }
+        
+        .login-card { 
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px; 
+            border-radius: 24px; 
+            width: 100%;
+            max-width: 400px;
+            text-align: center; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            margin: 20px;
+        }
+
+        .login-card h2 { margin: 0 0 10px 0; color: #1e3a8a; font-size: 1.8rem; }
+        .login-card p { color: #64748b; margin-bottom: 30px; font-size: 0.95rem; }
+
+        .input-group { position: relative; margin-bottom: 20px; }
+        
+        input[type="password"] { 
+            width: 100%;
+            padding: 14px 20px; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 12px; 
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            outline: none;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        input[type="password"]:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .login-submit-btn { 
+            width: 100%;
+            background: #1e3a8a; 
+            color: white; 
+            border: none; 
+            padding: 16px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: 700;
+            font-size: 1rem;
+            transition: transform 0.1s, background 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.3);
+        }
+
+        .login-submit-btn:hover { background: #1e40af; transform: translateY(-1px); }
+        .login-submit-btn:active { transform: translateY(0); }
+
+        .travel-icon { font-size: 3rem; margin-bottom: 20px; display: block; }
+
+        @media (max-width: 650px) {
+            .row-main { flex-direction: column; }
+            .time-col { width: 100%; border-right: none; border-bottom: 1px solid #e5e7eb; padding: 10px 16px; flex-direction: row; justify-content: space-between; }
+            .activity-col { padding: 15px; flex-wrap: wrap; }
+            .controls { width: 100%; justify-content: space-between; margin-top: 10px; }
+            .notes-drawer { padding: 15px; }
         }
     </style>
 </head>
 <body>
     <div id="auth-overlay">
-        <div class="login-box">
-            <h2>Reiseplaner Login</h2>
-            <p>Bitte Passwort eingeben:</p>
-            <input type="password" id="pw-input" placeholder="Passwort...">
-            <br>
-            <button class="login-btn" id="login-btn">Einloggen</button>
+        <div class="login-card">
+            <span class="travel-icon">✈️</span>
+            <h2>Reiseplaner</h2>
+            <p>Willkommen zurück! Bitte gib das Passwort ein, um den Plan zu öffnen.</p>
+            <div class="input-group">
+                <input type="password" id="pw-input" placeholder="••••••••" autofocus>
+            </div>
+            <button class="login-submit-btn" id="login-btn">Reiseplan öffnen</button>
         </div>
     </div>
 
     <header>
         <h1>Reiseplan USA 2026</h1>
-        <p class="subtitle">Sicherer Cloud-Sync: Florida & New York</p>
+        <p class="subtitle">Kollaborative Planung & Cloud-Sync</p>
         <div class="status-badge" id="sync-status">
             <div class="status-dot" id="status-dot"></div>
             <span id="status-text">Gesperrt</span>
@@ -73,7 +169,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ==========================================
         const myFirebaseConfig = {
             apiKey: "AIzaSyBfMmc6gekTKmJvR2UagXRawHJV1Rtg-ws",
             authDomain: "amerika2026-19c4e.firebaseapp.com",
@@ -83,15 +178,13 @@
             appId: "1:894526152489:web:06ec495b6d414d2e1da138"
         };
         
-        // DAS PASSWORT (ändere es hier nach Belieben)
         const APP_PASSWORD = "240924"; 
-        // DAS GEHEIME DOKUMENT (ändere diese ID zu etwas Zufälligem, z.B. "trip_9x2k8l4p")
         const SECRET_DOC_ID = "trip_v92k85pL02mZ"; 
-        // ==========================================
 
         const startDate = new Date(2026, 11, 1);
         const endDate = new Date(2026, 11, 22);
         const weekdays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+        
         const itinerary = {
             "2026-12-01": { 8: "Check-in (ZRH)", 9: "Abflug LX 66 nach Miami", 10: "Flug", 11: "Flug", 12: "Flug", 13: "Flug", 14: "Ankunft MIA (14:40)", 15: "Mietwagen Alamo", 16: "Fahrt Miami Beach", 17: "Check-in: Villa Italia" },
             "2026-12-06": { 9: "Check-out Villa Italia", 10: "Fahrt Naples", 11: "Fahrt Naples", 12: "Fahrt Naples", 15: "Check-in: Hampton Inn" },
@@ -100,105 +193,275 @@
             "2026-12-12": { 9: "Check-out Beachcomber", 10: "Fahrt Kissimmee", 11: "Fahrt Kissimmee", 15: "Check-in: Disney Music Resort" },
             "2026-12-14": { 8: "Check-out Disney", 9: "Mietwagenrückgabe", 10: "Sicherheitskontrolle", 11: "Abflug UA 254", 12: "Flug", 13: "Flug", 14: "Ankunft Newark", 15: "Transfer Manhattan", 16: "Ankunft Beekman Tower", 17: "Check-in: Beekman Tower" },
             "2026-12-21": { 11: "Check-out Beekman", 18: "Transfer EWR", 19: "Sicherheitskontrolle", 20: "Boarding", 21: "Abflug LX 19" },
-            "2026-12-22": { 8: "Flug", 9: "Flug", 10: "Landeanflug", 11: "Landung ZRH (11:35)", 12: "Heimreise", 13: "-", 14: "-", 15: "-", 16: "-", 17: "-", 18: "-", 19: "-", 20: "-", 21: "-" }
+            "2026-12-22": { 8: "Flug", 9: "Flug", 10: "Landeanflug", 11: "Landung ZRH (11:35)", 12: "Heimreise" }
         };
 
-        const container = document.getElementById('calendar-container');
-        let currentDate = new Date(startDate);
+        let db, auth, docRef;
+        let cloudData = {};
+        let openNotes = new Set(); 
 
-        while (currentDate <= endDate) {
-            const year = currentDate.getFullYear();
-            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-            const day = String(currentDate.getDate()).padStart(2, '0');
-            const dateKey = `${year}-${month}-${day}`;
-            const displayDate = `${weekdays[currentDate.getDay()]}, ${day}.${month}.${year}`;
-            
-            const dayCard = document.createElement('div');
-            dayCard.className = 'day-card';
-            dayCard.innerHTML = `<div class="day-header">${displayDate}</div><div class="night-block">22:00 - 08:00 Uhr: Nachtruhe</div>`;
-            
-            const eventsForDay = itinerary[dateKey] || {};
-            for (let h = 8; h <= 21; h++) {
-                const hourRow = document.createElement('div');
-                hourRow.className = 'hour-row';
-                const timeCol = document.createElement('div');
-                timeCol.className = 'time-col';
-                timeCol.textContent = `${String(h).padStart(2, '0')}:00 - ${String(h + 1).padStart(2, '0')}:00`;
+        function renderCalendar() {
+            const container = document.getElementById('calendar-container');
+            container.innerHTML = "";
+            let currentDate = new Date(startDate);
+
+            while (currentDate <= endDate) {
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                const dateKey = `${year}-${month}-${day}`;
                 
-                const activityCol = document.createElement('div');
-                activityCol.className = 'activity-col';
+                const dayCard = document.createElement('div');
+                dayCard.className = 'day-card';
+                dayCard.innerHTML = `<div class="day-header"><span>${weekdays[currentDate.getDay()]}</span><span class="date-tag">${day}.${month}.${year}</span></div><div class="night-block">22:00 - 08:00 Uhr: Nachtruhe</div>`;
                 
-                let activityText = eventsForDay[h];
-                if (activityText) {
-                    activityCol.innerHTML = `<span class="${activityText==='-'?'post-trip':'booked-event'}">${activityText==='-'?'Ende':activityText}</span>`;
-                } else {
-                    const inputId = `slot_${dateKey}_${h}`;
-                    activityCol.innerHTML = `<textarea id="${inputId}" class="editable-activity custom-input" placeholder="Freizeit..." disabled></textarea>`;
+                const dayEvents = itinerary[dateKey] || {};
+                
+                for (let h = 8; h <= 21; h++) {
+                    const blockStart = h;
+                    let blockEnd = h;
+                    let blockType = ""; 
+                    let blockTitle = "";
+                    let isConfirmed = false;
+                    let notes = "";
+
+                    if (dayEvents[h]) {
+                        blockType = "fixed";
+                        blockTitle = dayEvents[h];
+                        while (dayEvents[blockEnd + 1] === blockTitle && blockEnd < 21) blockEnd++;
+                    } else if (cloudData[`plan_${dateKey}_${h}`]) {
+                        blockType = "planned";
+                        const plan = cloudData[`plan_${dateKey}_${h}`];
+                        blockTitle = plan.title;
+                        isConfirmed = plan.confirmed || false;
+                        notes = plan.notes || "";
+                        const endHour = Math.min(plan.endHour || (h + 1), 22);
+                        
+                        let actualEnd = endHour;
+                        for (let i = h + 1; i < endHour; i++) {
+                            if (dayEvents[i]) { actualEnd = i; break; }
+                        }
+                        blockEnd = actualEnd - 1;
+                    } else {
+                        blockType = "free";
+                        blockTitle = "Freizeit";
+                        while (blockEnd < 21 && !dayEvents[blockEnd + 1] && !cloudData[`plan_${dateKey}_${blockEnd + 1}`]) blockEnd++;
+                    }
+
+                    dayCard.appendChild(createBlockRow(dateKey, blockStart, blockEnd, blockType, blockTitle, isConfirmed, notes));
+                    h = Math.max(h, blockEnd); 
                 }
-                hourRow.appendChild(timeCol);
-                hourRow.appendChild(activityCol);
-                dayCard.appendChild(hourRow);
+                container.appendChild(dayCard);
+                currentDate.setDate(currentDate.getDate() + 1);
             }
-            container.appendChild(dayCard);
-            currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        // Login Logic
+        function createBlockRow(dateKey, start, end, type, title, isConfirmed, notes) {
+            const row = document.createElement('div');
+            const noteId = `note_${dateKey}_${start}`;
+            const isNoteVisible = openNotes.has(noteId);
+            
+            const confirmedClass = isConfirmed ? "is-confirmed" : "is-editing";
+            row.className = `block-row block-${type} ${type === 'planned' ? confirmedClass : ''}`;
+            const duration = end - start + 1;
+            
+            const timeInfo = `<span>${String(start).padStart(2, '0')}:00 - ${String(end + 1).padStart(2, '0')}:00</span>`;
+            const durationLabel = `<span class="duration-label">${duration} Std.</span>`;
+
+            let activityHtml = "";
+            let drawerHtml = "";
+
+            if (type === 'fixed') {
+                activityHtml = `<span class="booked-event">${title}</span>`;
+            } else if (type === 'planned') {
+                if (isConfirmed) {
+                    const hasLink = notes.includes("http");
+                    const icon = hasLink ? "🔗" : (notes ? "📝" : "");
+                    
+                    activityHtml = `
+                        <div class="confirmed-title" onclick="toggleNotes('${noteId}')">
+                            ${title} <span class="notes-indicator">${icon}</span>
+                        </div>
+                        <div class="controls">
+                            <button class="btn-icon btn-edit" title="Bearbeiten" onclick="togglePlanStatus('${dateKey}', ${start}, false)">✏️</button>
+                            <button class="btn-icon btn-delete" title="Löschen" onclick="deletePlan('${dateKey}', ${start})">🗑️</button>
+                        </div>
+                    `;
+                    
+                    if (notes) {
+                        const linkMatch = notes.match(/(https?:\/\/[^\s]+)/g);
+                        const cleanNotes = notes.replace(/(https?:\/\/[^\s]+)/g, '');
+                        drawerHtml = `
+                            <div id="${noteId}" class="notes-drawer ${isNoteVisible ? 'is-visible' : ''}">
+                                <div class="notes-text">${cleanNotes.trim()}</div>
+                                ${linkMatch ? linkMatch.map(url => `<a href="${url}" target="_blank" class="notes-link">🌐 Link öffnen</a>`).join(' ') : ''}
+                            </div>
+                        `;
+                    }
+                } else {
+                    activityHtml = `
+                        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px;">
+                            <input type="text" class="editable-input" value="${title}" placeholder="Was habt ihr vor?" onchange="updatePlan('${dateKey}', ${start}, this.value, null, null, null)">
+                            <textarea class="notes-textarea" placeholder="Notizen oder Links hinzufügen..." onchange="updatePlan('${dateKey}', ${start}, null, null, null, this.value)">${notes}</textarea>
+                        </div>
+                        <div class="controls" style="align-self: flex-start; padding-top: 10px;">
+                            <div class="time-select-group">
+                                <select onchange="updatePlan('${dateKey}', ${start}, null, parseInt(this.value), null, null)">
+                                    ${generateStartTimeOptions(dateKey, start)}
+                                </select>
+                                <span>bis</span>
+                                <select onchange="updatePlan('${dateKey}', ${start}, null, null, parseInt(this.value), null)">
+                                    ${generateEndTimeOptions(dateKey, start, end + 1)}
+                                </select>
+                            </div>
+                            <button class="btn-icon btn-confirm" title="Bestätigen" onclick="togglePlanStatus('${dateKey}', ${start}, true)">✔️</button>
+                            <button class="btn-icon btn-delete" title="Löschen" onclick="deletePlan('${dateKey}', ${start})">🗑️</button>
+                        </div>
+                    `;
+                }
+            } else {
+                activityHtml = `
+                    <span class="free-time">Freizeit</span>
+                    <div class="controls">
+                        <button class="btn-add" onclick="addPlan('${dateKey}', ${start}, ${end + 1})">+ Planen</button>
+                    </div>
+                `;
+            }
+
+            row.innerHTML = `
+                <div class="row-main">
+                    <div class="time-col">${timeInfo}${durationLabel}</div>
+                    <div class="activity-col">${activityHtml}</div>
+                </div>
+                ${drawerHtml}
+            `;
+            return row;
+        }
+
+        window.toggleNotes = (noteId) => {
+            if (openNotes.has(noteId)) openNotes.delete(noteId);
+            else openNotes.add(noteId);
+            renderCalendar();
+        };
+
+        function getDayOccupancy(dateKey) {
+            const dayEvents = itinerary[dateKey] || {};
+            const occupancy = {};
+            for (let h = 8; h <= 21; h++) {
+                if (dayEvents[h]) occupancy[h] = "fixed";
+                else if (cloudData[`plan_${dateKey}_${h}`]) occupancy[h] = "planned";
+                else occupancy[h] = "free";
+            }
+            return occupancy;
+        }
+
+        function generateStartTimeOptions(dateKey, currentStart) {
+            const occupancy = getDayOccupancy(dateKey);
+            let options = "";
+            for (let h = 8; h <= 21; h++) {
+                if (occupancy[h] === "free" || h === currentStart) {
+                    options += `<option value="${h}" ${h === currentStart ? 'selected' : ''}>${String(h).padStart(2, '0')}:00</option>`;
+                }
+            }
+            return options;
+        }
+
+        function generateEndTimeOptions(dateKey, start, currentEnd) {
+            const dayEvents = itinerary[dateKey] || {};
+            let options = "";
+            for (let h = start + 1; h <= 22; h++) {
+                options += `<option value="${h}" ${h === currentEnd ? 'selected' : ''}>${String(h).padStart(2, '0')}:00</option>`;
+                if (h < 22) {
+                    const isFixed = dayEvents[h];
+                    const isOtherPlan = cloudData[`plan_${dateKey}_${h}`] && h !== start;
+                    if (isFixed || isOtherPlan) break;
+                }
+            }
+            return options;
+        }
+
+        window.addPlan = (dateKey, start, endLimit) => {
+            const id = `plan_${dateKey}_${start}`;
+            const defaultEnd = Math.min(start + 1, endLimit);
+            cloudData[id] = { title: "Neue Aktivität", startHour: start, endHour: defaultEnd, confirmed: false, notes: "" };
+            saveToCloud();
+        };
+
+        window.updatePlan = (dateKey, oldStart, newTitle, newStart, newEnd, newNotes) => {
+            const currentId = `plan_${dateKey}_${oldStart}`;
+            const plan = { ...cloudData[currentId] };
+            
+            if (newTitle !== null) plan.title = newTitle;
+            if (newNotes !== null) plan.notes = newNotes;
+            
+            let finalStart = (newStart !== null) ? newStart : oldStart;
+            let finalEnd = (newEnd !== null) ? newEnd : plan.endHour;
+            if (finalStart >= finalEnd) finalEnd = finalStart + 1;
+
+            delete cloudData[currentId];
+            cloudData[`plan_${dateKey}_${finalStart}`] = { 
+                ...plan,
+                startHour: finalStart, 
+                endHour: finalEnd 
+            };
+            
+            saveToCloud();
+        };
+
+        window.togglePlanStatus = (dateKey, hour, status) => {
+            const id = `plan_${dateKey}_${hour}`;
+            if (cloudData[id]) {
+                cloudData[id].confirmed = status;
+                saveToCloud();
+            }
+        };
+
+        window.deletePlan = (dateKey, hour) => {
+            delete cloudData[`plan_${dateKey}_${hour}`];
+            saveToCloud();
+        };
+
+        async function saveToCloud() {
+            if (!docRef) return;
+            try { await setDoc(docRef, cloudData); renderCalendar(); } catch (err) { console.error(err); }
+        }
+
         const loginBtn = document.getElementById('login-btn');
         const pwInput = document.getElementById('pw-input');
         const overlay = document.getElementById('auth-overlay');
 
-        loginBtn.onclick = () => {
+        function handleLogin() {
             if (pwInput.value === APP_PASSWORD) {
                 overlay.style.opacity = '0';
                 setTimeout(() => overlay.style.display = 'none', 500);
                 initFirebase();
-            } else {
-                alert("Falsches Passwort!");
-                pwInput.value = "";
+            } else { 
+                alert("Falsches Passwort!"); 
+                pwInput.value = ""; 
+                pwInput.focus();
             }
-        };
+        }
 
-        let db, auth, docRef;
+        loginBtn.onclick = handleLogin;
+        pwInput.onkeypress = (e) => { if (e.key === "Enter") handleLogin(); };
+
         async function initFirebase() {
             const app = initializeApp(myFirebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-            
             await signInAnonymously(auth);
-
             onAuthStateChanged(auth, async (user) => {
                 if (!user) return;
                 docRef = doc(db, 'reiseplan', SECRET_DOC_ID);
-
                 document.getElementById('status-dot').classList.add('connected');
                 document.getElementById('status-text').textContent = "Live verbunden";
-                
-                document.querySelectorAll('.custom-input').forEach(input => {
-                    input.disabled = false;
-                    input.addEventListener('input', handleInput);
-                });
-
                 onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        document.querySelectorAll('.custom-input').forEach(input => {
-                            if (document.activeElement !== input) input.value = data[input.id] || "";
-                        });
-                    }
+                        cloudData = docSnap.data();
+                        renderCalendar();
+                    } else renderCalendar();
                 });
             });
-        }
-
-        let timeout = null;
-        let pendingData = {};
-        async function handleInput(e) {
-            pendingData[e.target.id] = e.target.value;
-            clearTimeout(timeout);
-            timeout = setTimeout(async () => {
-                if (!docRef) return;
-                try { await setDoc(docRef, pendingData, { merge: true }); pendingData = {}; } catch (err) { console.error(err); }
-            }, 500);
         }
     </script>
 </body>
